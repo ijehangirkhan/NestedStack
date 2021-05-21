@@ -1,0 +1,89 @@
+AWSTemplateFormatVersion: "2010-09-09"
+
+Description: ALB Nested Stack Template.
+
+Parameters:
+  VPCId:
+    Description: Create Secuirty Group in this VPC.
+    Type: AWS::EC2::VPC::Id
+
+  PublicSubnet1:
+    Description: Public Subnet ID 1 in this VPC.
+    Type: AWS::EC2::Subnet::Id
+  
+  PublicSubnet2:
+    Description: Public Subnet ID 2 in this VPC.
+    Type: AWS::EC2::Subnet::Id
+
+  PublicSubnet3:
+    Description: Public Subnet ID 3 in this VPC.
+    Type: AWS::EC2::Subnet::Id
+
+  ALBSG:
+    Description: ALB Secuirty Group in this VPC.
+    Type: AWS::EC2::SecurityGroup::Id
+
+  Environment:
+    Type: String
+    Description: Select the appropriate environment
+    AllowedValues:
+      - dev
+      - test
+      - prod
+
+
+Resources:
+
+  JehangirCFTargetGroup:
+    Type: AWS::ElasticLoadBalancingV2::TargetGroup
+    Properties:
+      Name: JehangirCFTargetGroup
+      Port: 80
+      Protocol: HTTP
+      TargetType: instance
+      VpcId: !Ref VPCId
+      Tags:
+        - Key: Name
+          Value: 
+            Fn::Sub: ${AWS::StackName}-JehangirCFTargetGroup-${Environment}
+
+  
+
+  JehangirCFALBListener:
+    Type: AWS::ElasticLoadBalancingV2::Listener
+    Properties:
+      DefaultActions:
+        - Type: forward
+          TargetGroupArn:
+            Ref: JehangirCFTargetGroup
+      LoadBalancerArn:
+          Ref: JehangirCFALB
+      Port: 80
+      Protocol: HTTP
+
+  JehangirCFALB:
+    Type: AWS::ElasticLoadBalancingV2::LoadBalancer
+    Properties:
+      Name: JehangirCFALB
+      Scheme: internet-facing
+      SecurityGroups:
+        - !Ref ALBSG
+      Subnets: 
+        - !Ref PublicSubnet1
+        - !Ref PublicSubnet2
+        - !Ref PublicSubnet3
+      Tags:
+        - Key: Name
+          Value: 
+            Fn::Sub: ${AWS::StackName}-JehangirCFALB-${Environment}
+
+
+
+Outputs:
+  WebURL:
+    Description: IP to access this website.
+    Value: !Sub '${JehangirCFALB.DNSName}'
+
+  JehangirCFTargetGroup:
+    Description: ALB Target Group
+    Value: !Ref JehangirCFTargetGroup

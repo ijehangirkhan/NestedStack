@@ -1,0 +1,104 @@
+AWSTemplateFormatVersion: "2010-09-09"
+
+Description: SG Nested Stack Template.
+
+Parameters:
+  VPCId:
+    Description: Create Secuirty Group in this VPC.
+    Type: AWS::EC2::VPC::Id
+
+  Environment:
+    Type: String
+    Description: Select the appropriate environment
+    AllowedValues:
+      - dev
+      - test
+      - prod
+
+
+
+Resources:
+
+#Create ALB Security Group
+  JehangirCFALBSG:
+    Type: AWS::EC2::SecurityGroup
+    Properties:
+      GroupDescription: Enable HTTP access on port 80
+      SecurityGroupIngress:
+        - IpProtocol: tcp
+          FromPort: 80
+          ToPort: 80
+          CidrIp: 0.0.0.0/0
+      VpcId: !Ref VPCId
+      Tags:
+        - Key: Name
+          Value: 
+            Fn::Sub: ${AWS::StackName}-JehangirCFALBSG-${Environment}
+
+
+#Create Web Security Group
+  JehangirCFWebSG:
+    Type: AWS::EC2::SecurityGroup
+    Properties:
+      GroupDescription: Security Group for Web Server
+      SecurityGroupIngress:
+        - IpProtocol: tcp
+          FromPort: 443
+          ToPort: 443
+          CidrIp: 0.0.0.0/0
+        - IpProtocol: tcp
+          FromPort: 80
+          ToPort: 80
+          CidrIp: 0.0.0.0/0
+        - IpProtocol: tcp
+          FromPort: 22
+          ToPort: 22
+          CidrIp: 0.0.0.0/0
+      VpcId: !Ref VPCId
+      Tags:
+        - Key: Name
+          Value: 
+            Fn::Sub: ${AWS::StackName}-JehangirCFWebSG-${Environment}
+
+#Create Database Security Group
+  JehangirCFDBSG:
+    Type: AWS::EC2::SecurityGroup
+    Properties:
+      GroupDescription: Security Group for Database Server
+      SecurityGroupIngress:
+        - IpProtocol: tcp
+          FromPort: 443
+          ToPort: 443
+          SourceSecurityGroupId: !GetAtt JehangirCFWebSG.GroupId
+        - IpProtocol: tcp
+          FromPort: 80
+          ToPort: 80
+          SourceSecurityGroupId: !GetAtt JehangirCFWebSG.GroupId
+        - IpProtocol: tcp
+          FromPort: 3306
+          ToPort: 3306
+          SourceSecurityGroupId: !GetAtt JehangirCFWebSG.GroupId
+        - IpProtocol: tcp
+          FromPort: 22
+          ToPort: 22
+          SourceSecurityGroupId: !GetAtt JehangirCFWebSG.GroupId
+      VpcId: !Ref VPCId
+      Tags:
+        - Key: Name
+          Value: 
+            Fn::Sub: ${AWS::StackName}-JehangirCFDBSG-${Environment}
+
+
+
+Outputs:
+  JehangirCFWebSG:
+    Description: Web Security Group.
+    Value: !Ref JehangirCFWebSG
+
+  JehangirCFDBSG:
+    Description: Database Security Group.
+    Value: !Ref JehangirCFDBSG
+  
+  JehangirCFALBSG:
+    Description: Database Security Group.
+    Value: !Ref JehangirCFALBSG

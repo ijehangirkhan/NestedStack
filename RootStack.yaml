@@ -1,0 +1,103 @@
+AWSTemplateFormatVersion: "2010-09-09"
+
+Description: Main Root Template.
+
+Parameters:
+  VpcCIDR:
+    Default: 10.0.0.0/16
+    Description: Please enter IP range (CIDR notation) for this VPC
+    Type: String
+
+  PublicSubnet1CIDR:
+    Default: 10.0.1.0/24
+    Description: Please enter IP range (CIDR notation) for the public subnet 1
+    Type: String
+
+  PublicSubnet2CIDR:
+    Default: 10.0.2.0/24
+    Description: Please enter IP range (CIDR notation) for the public subnet 2
+    Type: String
+  
+  PublicSubnet3CIDR:
+    Default: 10.0.3.0/24
+    Description: Please enter IP range (CIDR notation) for the public subnet 3
+    Type: String
+  
+  PrivateSubnet1CIDR:
+    Default: 10.0.4.0/24
+    Description: Please enter IP range (CIDR notation) for the private subnet 1
+    Type: String
+  Environment:
+    Type: String
+    Description: Select the appropriate environment
+    AllowedValues:
+      - dev
+      - test
+      - prod
+
+
+Resources:
+
+  VPCStack:
+      Type: AWS::CloudFormation::Stack
+      Properties:
+        Parameters:
+          VpcCIDR: !Ref VpcCIDR
+          PublicSubnet1CIDR: !Ref PublicSubnet1CIDR
+          PublicSubnet2CIDR: !Ref PublicSubnet2CIDR
+          PublicSubnet3CIDR: !Ref PublicSubnet3CIDR
+          PrivateSubnet1CIDR: !Ref PrivateSubnet1CIDR
+          Environment: !Ref Environment
+        TemplateURL: https://jehangir-nested-bucket.s3.us-east-2.amazonaws.com/nestedstacks/NestedStack-VPC.yaml
+        TimeoutInMinutes: 5
+  
+  SGStack:
+      Type: AWS::CloudFormation::Stack
+      Properties:
+        Parameters:
+          VPCId: !GetAtt VPCStack.Outputs.JehangirCFVPC
+          Environment: !Ref Environment
+        TemplateURL: https://jehangir-nested-bucket.s3.us-east-2.amazonaws.com/nestedstacks/NestedStack-SG.yaml
+        TimeoutInMinutes: 5
+
+
+  ALBStack:
+      Type: AWS::CloudFormation::Stack
+      Properties:
+        Parameters:
+          VPCId: !GetAtt VPCStack.Outputs.JehangirCFVPC
+          PublicSubnet1: !GetAtt VPCStack.Outputs.JehangirCFPublicSubnet1
+          PublicSubnet2: !GetAtt VPCStack.Outputs.JehangirCFPublicSubnet2
+          PublicSubnet3: !GetAtt VPCStack.Outputs.JehangirCFPublicSubnet3
+          ALBSG: !GetAtt SGStack.Outputs.JehangirCFALBSG
+          Environment: !Ref Environment
+        TemplateURL: https://jehangir-nested-bucket.s3.us-east-2.amazonaws.com/nestedstacks/NestedStack-ALB.yaml
+        TimeoutInMinutes: 5
+
+
+  DBStack:
+      Type: AWS::CloudFormation::Stack
+      Properties:
+        Parameters:
+          PrivateSubnet1: !GetAtt VPCStack.Outputs.JehangirCFPrivateSubnet1
+          DBSG: !GetAtt SGStack.Outputs.JehangirCFDBSG
+          Environment: !Ref Environment
+        TemplateURL: https://jehangir-nested-bucket.s3.us-east-2.amazonaws.com/nestedstacks/NestedStack-EC2-DB.yaml
+        TimeoutInMinutes: 5
+
+
+
+
+  ASGStack:
+      Type: AWS::CloudFormation::Stack
+      Properties:
+        Parameters:
+          PublicSubnet1: !GetAtt VPCStack.Outputs.JehangirCFPublicSubnet1
+          PublicSubnet2: !GetAtt VPCStack.Outputs.JehangirCFPublicSubnet2
+          PublicSubnet3: !GetAtt VPCStack.Outputs.JehangirCFPublicSubnet3
+          DatabaseIP: !GetAtt DBStack.Outputs.JehangirCFDBPrivateIP
+          WebSG: !GetAtt SGStack.Outputs.JehangirCFWebSG
+          TargetGroup: !GetAtt ALBStack.Outputs.JehangirCFTargetGroup
+          Environment: !Ref Environment
+        TemplateURL: https://jehangir-nested-bucket.s3.us-east-2.amazonaws.com/nestedstacks/NestedStack-ASG.yaml
+        TimeoutInMinutes: 5

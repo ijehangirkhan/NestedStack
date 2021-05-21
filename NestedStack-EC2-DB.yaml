@@ -1,0 +1,73 @@
+AWSTemplateFormatVersion: "2010-09-09"
+
+Description: ALB Nested Stack Template.
+
+Parameters:
+
+  PrivateSubnet1:
+    Description: Private Subnet ID 1 in this VPC.
+    Type: AWS::EC2::Subnet::Id
+
+  DBSG:
+    Description: ALB Secuirty Group in this VPC.
+    Type: AWS::EC2::SecurityGroup::Id
+    
+
+  Environment:
+    Type: String
+    Description: Select the appropriate environment
+    AllowedValues:
+      - dev
+      - test
+      - prod
+
+
+
+Resources:
+
+  JehangirCFDBServer: 
+      Type: AWS::EC2::Instance
+      Properties:
+        KeyName: "JehangirKP"
+        ImageId: ami-00399ec92321828f5
+        InstanceType: t2.micro
+        NetworkInterfaces: 
+          - AssociatePublicIpAddress: false
+            DeviceIndex: "0"
+            GroupSet: 
+              - !Ref DBSG
+            SubnetId: !Ref PrivateSubnet1
+        UserData: 
+          Fn::Base64:
+            !Sub |
+            #!/bin/bash
+            set -x
+            apt update -y
+            apt upgrade -y
+            apt install mysql-server -y
+            service mysql stop
+            cd /etc
+            chmod -R 777 mysql
+            cd mysql
+            cd mysql.conf.d
+            sed -i 's/127.0.0.1/0.0.0.0/g' mysqld.cnf
+            cd
+            service mysql start
+            mysql <<EOF
+            CREATE USER 'admin'@'%' IDENTIFIED BY 'wordpress';
+            GRANT ALL PRIVILEGES ON *.* TO 'admin'@'%';
+            flush privileges;
+            exit
+            EOF
+            mysql -u admin -pwordpress -e 'create database mydatabase;'
+        Tags:
+          - Key: Name
+            Value: 
+              Fn::Sub: ${AWS::StackName}-JehangirCFDBServer-${Environment}
+
+
+Outputs:
+
+  JehangirCFDBPrivateIP:
+    Description: DB Server Private IP
+    Value: !GetAtt JehangirCFDBServer.PrivateIp

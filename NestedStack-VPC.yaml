@@ -1,0 +1,262 @@
+AWSTemplateFormatVersion: "2010-09-09"
+
+Description: VPC Nested Stack Template.
+
+
+Parameters:
+  VpcCIDR:
+    Default: 10.0.0.0/16
+    Description: Please enter IP range (CIDR notation) for this VPC
+    Type: String
+
+  PublicSubnet1CIDR:
+    Default: 10.0.1.0/24
+    Description: Please enter IP range (CIDR notation) for the public subnet 1
+    Type: String
+
+  PublicSubnet2CIDR:
+    Default: 10.0.2.0/24
+    Description: Please enter IP range (CIDR notation) for the public subnet 2
+    Type: String
+  
+  PublicSubnet3CIDR:
+    Default: 10.0.3.0/24
+    Description: Please enter IP range (CIDR notation) for the public subnet 3
+    Type: String
+  
+  PrivateSubnet1CIDR:
+    Default: 10.0.4.0/24
+    Description: Please enter IP range (CIDR notation) for the private subnet 1
+    Type: String
+
+  Environment:
+    Type: String
+    Description: Select the appropriate environment
+    AllowedValues:
+      - dev
+      - test
+      - prod
+
+
+
+Metadata:
+  AWS::CloudFormation::Interface: 
+    ParameterGroups:
+      - 
+        Label: 
+          default: "VPC CIDR"
+        Parameters: 
+          - VpcCIDR
+      - 
+        Label: 
+          default: "Subnet CIDR"
+        Parameters:
+          - PublicSubnet1CIDR
+          - PublicSubnet2CIDR
+          - PublicSubnet3CIDR
+          - PrivateSubnet1CIDR
+
+
+Resources:
+  JehangirCFVPC:
+    Type: AWS::EC2::VPC
+    Properties:
+      CidrBlock: !Ref VpcCIDR
+      EnableDnsHostnames: true
+      EnableDnsSupport: true
+      Tags:
+        - Key: Name
+          Value: !Sub ${AWS::StackName}-JehangirCFVPC-${Environment}
+
+
+
+  JehangirCFPublicSubnet1:
+    Type: AWS::EC2::Subnet
+    Properties:
+      AvailabilityZone: !Select [ 0, !GetAZs '' ]
+      CidrBlock: !Ref PublicSubnet1CIDR
+      MapPublicIpOnLaunch: true
+      VpcId: !Ref JehangirCFVPC
+      Tags:
+        - Key: Name
+          Value: !Sub ${AWS::StackName}-JehangirCFPublicSubnet1-${Environment}
+
+  
+  JehangirCFPublicSubnet2:
+    Type: AWS::EC2::Subnet
+    Properties:
+      AvailabilityZone: !Select [ 1, !GetAZs '' ]
+      CidrBlock: !Ref PublicSubnet2CIDR
+      MapPublicIpOnLaunch: true
+      VpcId: !Ref JehangirCFVPC
+      Tags:
+        - Key: Name
+          Value: !Sub ${AWS::StackName}-JehangirCFPublicSubnet2-${Environment}
+      
+  
+  JehangirCFPublicSubnet3:
+    Type: AWS::EC2::Subnet
+    Properties:
+      AvailabilityZone: !Select [ 2, !GetAZs '' ]
+      CidrBlock: !Ref PublicSubnet3CIDR
+      MapPublicIpOnLaunch: true
+      VpcId: !Ref JehangirCFVPC
+      Tags:
+        - Key: Name
+          Value: !Sub ${AWS::StackName}-JehangirCFPublicSubnet3-${Environment}
+
+
+
+  JehangirCFPublicRouteTable:
+    Type: AWS::EC2::RouteTable
+    Properties:
+      VpcId: !Ref JehangirCFVPC
+      Tags:
+        - Key: Name
+          Value: !Sub ${AWS::StackName}-JehangirCFPublicRouteTable-${Environment}
+
+
+
+  PublicSubnet1RouteTableAssociation:
+    Type: AWS::EC2::SubnetRouteTableAssociation
+    Properties:
+      RouteTableId: !Ref JehangirCFPublicRouteTable
+      SubnetId: !Ref JehangirCFPublicSubnet1
+
+  PublicSubnet2RouteTableAssociation:
+    Type: AWS::EC2::SubnetRouteTableAssociation
+    Properties:
+      RouteTableId: !Ref JehangirCFPublicRouteTable
+      SubnetId: !Ref JehangirCFPublicSubnet2
+  
+  PublicSubnet3RouteTableAssociation:
+    Type: AWS::EC2::SubnetRouteTableAssociation
+    Properties:
+      RouteTableId: !Ref JehangirCFPublicRouteTable
+      SubnetId: !Ref JehangirCFPublicSubnet3
+
+
+  JehangirCFPrivateSubnet1:
+    Type: AWS::EC2::Subnet
+    Properties:
+      AvailabilityZone: !Select [ 0, !GetAZs '' ]
+      CidrBlock: !Ref PrivateSubnet1CIDR
+      MapPublicIpOnLaunch: false
+      VpcId: !Ref JehangirCFVPC
+      Tags:
+        - Key: Name
+          Value: !Sub ${AWS::StackName}-JehangirCFPrivateSubnet1-${Environment}
+
+
+
+  JehangirCFInternetGateway:
+    Type: AWS::EC2::InternetGateway
+    DependsOn: JehangirCFVPC
+    Properties:
+      Tags:
+        - Key: Name
+          Value: !Sub ${AWS::StackName}-JehangirCFInternetGateway-${Environment}
+
+
+
+  InternetGatewayAttachment:
+    Type: AWS::EC2::VPCGatewayAttachment
+    Properties:
+      InternetGatewayId: !Ref JehangirCFInternetGateway
+      VpcId: !Ref JehangirCFVPC
+
+
+  JehangirCFPublicRoute:
+    Type: AWS::EC2::Route
+    DependsOn: 
+      - JehangirCFInternetGateway
+      - InternetGatewayAttachment
+    Properties:
+      DestinationCidrBlock: 0.0.0.0/0
+      GatewayId: !Ref JehangirCFInternetGateway
+      RouteTableId: !Ref JehangirCFPublicRouteTable
+
+
+
+  ElasticIPAddress:
+    Type: AWS::EC2::EIP
+    DependsOn: InternetGatewayAttachment
+    Properties:
+      Domain: JehangirCFVPC
+
+
+  JehangirCFNATGateway:
+    Type: AWS::EC2::NatGateway
+    Properties:
+      AllocationId: !GetAtt ElasticIPAddress.AllocationId
+      SubnetId: !Ref JehangirCFPublicSubnet1
+      Tags:
+      - Key: Name
+        Value: !Sub ${AWS::StackName}-JehangirCFNATGateway-${Environment}
+  
+
+
+  JehangirCFPrivateRouteTable:
+    Type: AWS::EC2::RouteTable
+    Properties:
+      VpcId: !Ref JehangirCFVPC
+      Tags:
+        - Key: Name
+          Value: !Sub ${AWS::StackName}-JehangirCFPrivateRouteTable-${Environment}
+
+
+
+  JehangirCFPrivateRoute:
+    Type: AWS::EC2::Route
+    Properties:
+      DestinationCidrBlock: 0.0.0.0/0
+      NatGatewayId: !Ref JehangirCFNATGateway
+      RouteTableId: !Ref JehangirCFPrivateRouteTable
+
+
+
+  PrivateSubnet1RouteTableAssociation:
+    Type: AWS::EC2::SubnetRouteTableAssociation
+    Properties:
+      RouteTableId: !Ref JehangirCFPrivateRouteTable
+      SubnetId: !Ref JehangirCFPrivateSubnet1
+
+
+
+
+
+Outputs:
+# Export VPC ID
+  JehangirCFVPC:
+    Description: VPC ID
+    Export:
+      Name: !Sub ${AWS::StackName}-JehangirCFVPC-${Environment}
+    Value: !Ref JehangirCFVPC
+
+# Export Public Subnet 1 
+  JehangirCFPublicSubnet1:
+    Description: Public Subnet 1 ID
+    Export:
+      Name: !Sub ${AWS::StackName}-JehangirCFPublicSubnet1-${Environment}
+    Value: !Ref JehangirCFPublicSubnet1
+
+# Export Public Subnet 2 
+  JehangirCFPublicSubnet2:
+    Description: Public Subnet 2 ID
+    Export:
+      Name: !Sub ${AWS::StackName}-JehangirCFPublicSubnet2-${Environment}
+    Value: !Ref JehangirCFPublicSubnet2
+
+# Export Public Subnet 3 
+  JehangirCFPublicSubnet3:
+    Description: Public Subnet 3 ID
+    Export:
+      Name: !Sub ${AWS::StackName}-JehangirCFPublicSubnet3-${Environment}
+    Value: !Ref JehangirCFPublicSubnet3
+
+# Export Private Subnet 1 
+  JehangirCFPrivateSubnet1:
+    Description: Private Subnet 1 ID
+    Export:
+      Name: !Sub ${AWS::StackName}-JehangirCFPrivateSubnet1-${Environment}
+    Value: !Ref JehangirCFPrivateSubnet1
