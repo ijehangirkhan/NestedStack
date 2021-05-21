@@ -102,5 +102,5 @@ Resources:
         Tags:
           - Key: Name
             Value: 
-              Fn::Sub: ${AWS::StackName}-JehangirCFASG-${Environment}
+              Fn::Sub: JehangirCFASG-${Environment}
             PropagateAtLaunch: true

@@ -63,7 +63,7 @@ Resources:
         Tags:
           - Key: Name
             Value: 
-              Fn::Sub: ${AWS::StackName}-JehangirCFDBServer-${Environment}
+              Fn::Sub: JehangirCFDBServer-${Environment}
 
 
 Outputs:

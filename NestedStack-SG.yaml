@@ -33,7 +33,7 @@ Resources:
       Tags:
         - Key: Name
           Value: 
-            Fn::Sub: ${AWS::StackName}-JehangirCFALBSG-${Environment}
+            Fn::Sub: JehangirCFALBSG-${Environment}
 
 
 #Create Web Security Group
@@ -58,7 +58,7 @@ Resources:
       Tags:
         - Key: Name
           Value: 
-            Fn::Sub: ${AWS::StackName}-JehangirCFWebSG-${Environment}
+            Fn::Sub: JehangirCFWebSG-${Environment}
 
 #Create Database Security Group
   JehangirCFDBSG:
@@ -86,7 +86,7 @@ Resources:
       Tags:
         - Key: Name
           Value: 
-            Fn::Sub: ${AWS::StackName}-JehangirCFDBSG-${Environment}
+            Fn::Sub: JehangirCFDBSG-${Environment}
 
 
 

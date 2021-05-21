@@ -66,7 +66,7 @@ Resources:
       EnableDnsSupport: true
       Tags:
         - Key: Name
-          Value: !Sub ${AWS::StackName}-JehangirCFVPC-${Environment}
+          Value: !Sub JehangirCFVPC-${Environment}
 
 
 
@@ -79,7 +79,7 @@ Resources:
       VpcId: !Ref JehangirCFVPC
       Tags:
         - Key: Name
-          Value: !Sub ${AWS::StackName}-JehangirCFPublicSubnet1-${Environment}
+          Value: !Sub JehangirCFPublicSubnet1-${Environment}
 
   
   JehangirCFPublicSubnet2:
@@ -91,7 +91,7 @@ Resources:
       VpcId: !Ref JehangirCFVPC
       Tags:
         - Key: Name
-          Value: !Sub ${AWS::StackName}-JehangirCFPublicSubnet2-${Environment}
+          Value: !Sub JehangirCFPublicSubnet2-${Environment}
       
   
   JehangirCFPublicSubnet3:
@@ -103,7 +103,7 @@ Resources:
       VpcId: !Ref JehangirCFVPC
       Tags:
         - Key: Name
-          Value: !Sub ${AWS::StackName}-JehangirCFPublicSubnet3-${Environment}
+          Value: !Sub JehangirCFPublicSubnet3-${Environment}
 
 
 
@@ -113,7 +113,7 @@ Resources:
       VpcId: !Ref JehangirCFVPC
       Tags:
         - Key: Name
-          Value: !Sub ${AWS::StackName}-JehangirCFPublicRouteTable-${Environment}
+          Value: !Sub JehangirCFPublicRouteTable-${Environment}
 
 
 
@@ -145,7 +145,7 @@ Resources:
       VpcId: !Ref JehangirCFVPC
       Tags:
         - Key: Name
-          Value: !Sub ${AWS::StackName}-JehangirCFPrivateSubnet1-${Environment}
+          Value: !Sub JehangirCFPrivateSubnet1-${Environment}
 
 
 
@@ -155,7 +155,7 @@ Resources:
     Properties:
       Tags:
         - Key: Name
-          Value: !Sub ${AWS::StackName}-JehangirCFInternetGateway-${Environment}
+          Value: !Sub JehangirCFInternetGateway-${Environment}
 
 
 
@@ -192,7 +192,7 @@ Resources:
       SubnetId: !Ref JehangirCFPublicSubnet1
       Tags:
       - Key: Name
-        Value: !Sub ${AWS::StackName}-JehangirCFNATGateway-${Environment}
+        Value: !Sub JehangirCFNATGateway-${Environment}
   
 
 
@@ -202,7 +202,7 @@ Resources:
       VpcId: !Ref JehangirCFVPC
       Tags:
         - Key: Name
-          Value: !Sub ${AWS::StackName}-JehangirCFPrivateRouteTable-${Environment}
+          Value: !Sub JehangirCFPrivateRouteTable-${Environment}
 
 
 
@@ -230,33 +230,33 @@ Outputs:
   JehangirCFVPC:
     Description: VPC ID
     Export:
-      Name: !Sub ${AWS::StackName}-JehangirCFVPC-${Environment}
+      Name: !Sub JehangirCFVPC-${Environment}
     Value: !Ref JehangirCFVPC
 
 # Export Public Subnet 1 
   JehangirCFPublicSubnet1:
     Description: Public Subnet 1 ID
     Export:
-      Name: !Sub ${AWS::StackName}-JehangirCFPublicSubnet1-${Environment}
+      Name: !Sub JehangirCFPublicSubnet1-${Environment}
     Value: !Ref JehangirCFPublicSubnet1
 
 # Export Public Subnet 2 
   JehangirCFPublicSubnet2:
     Description: Public Subnet 2 ID
     Export:
-      Name: !Sub ${AWS::StackName}-JehangirCFPublicSubnet2-${Environment}
+      Name: !Sub JehangirCFPublicSubnet2-${Environment}
     Value: !Ref JehangirCFPublicSubnet2
 
 # Export Public Subnet 3 
   JehangirCFPublicSubnet3:
     Description: Public Subnet 3 ID
     Export:
-      Name: !Sub ${AWS::StackName}-JehangirCFPublicSubnet3-${Environment}
+      Name: !Sub JehangirCFPublicSubnet3-${Environment}
     Value: !Ref JehangirCFPublicSubnet3
 
 # Export Private Subnet 1 
   JehangirCFPrivateSubnet1:
     Description: Private Subnet 1 ID
     Export:
-      Name: !Sub ${AWS::StackName}-JehangirCFPrivateSubnet1-${Environment}
+      Name: !Sub JehangirCFPrivateSubnet1-${Environment}
     Value: !Ref JehangirCFPrivateSubnet1

@@ -45,7 +45,7 @@ Resources:
       Tags:
         - Key: Name
           Value: 
-            Fn::Sub: ${AWS::StackName}-JehangirCFTargetGroup-${Environment}
+            Fn::Sub: JehangirCFTargetGroup-${Environment}
 
   
 
@@ -75,7 +75,7 @@ Resources:
       Tags:
         - Key: Name
           Value: 
-            Fn::Sub: ${AWS::StackName}-JehangirCFALB-${Environment}
+            Fn::Sub: JehangirCFALB-${Environment}
 
 
 
