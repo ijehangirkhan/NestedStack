@@ -37,6 +37,10 @@ Parameters:
       - test
       - prod
 
+  MyKeyName:
+    Description: Select the Key Name.
+    Type: AWS::EC2::KeyPair::KeyName
+
 
 
 Resources:
@@ -48,7 +52,7 @@ Resources:
         LaunchTemplateData:
           ImageId: ami-00399ec92321828f5
           InstanceType: t2.micro
-          KeyName: JehangirKP
+          KeyName: !Ref MyKeyName
           SecurityGroupIds: 
             - !Ref WebSG
           UserData:

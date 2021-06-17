@@ -22,13 +22,18 @@ Parameters:
       - prod
 
 
+  MyKeyName:
+    Description: Select the Key Name.
+    Type: AWS::EC2::KeyPair::KeyName
+
+
 
 Resources:
 
   JehangirCFDBServer: 
       Type: AWS::EC2::Instance
       Properties:
-        KeyName: "JehangirKP"
+        KeyName: !Ref MyKeyName
         ImageId: ami-00399ec92321828f5
         InstanceType: t2.micro
         NetworkInterfaces: 

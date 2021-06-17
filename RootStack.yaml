@@ -2,6 +2,15 @@ AWSTemplateFormatVersion: "2010-09-09"
 
 Description: Main Root Template.
 
+# Add Bucket Name Parameter
+# No Launch Template Name
+# Availility Zone
+# Key Pair Name - Done
+# Environment Folder in S3
+# Ami - ID
+# Instance Type
+
+
 Parameters:
   VpcCIDR:
     Default: 10.0.0.0/16
@@ -34,7 +43,11 @@ Parameters:
       - dev
       - test
       - prod
-
+  
+  MyKeyName:
+    Description: Select the Key Name.
+    Type: AWS::EC2::KeyPair::KeyName
+    
 
 Resources:
 
@@ -82,6 +95,7 @@ Resources:
           PrivateSubnet1: !GetAtt VPCStack.Outputs.JehangirCFPrivateSubnet1
           DBSG: !GetAtt SGStack.Outputs.JehangirCFDBSG
           Environment: !Ref Environment
+          MyKeyName: !Ref MyKeyName
         TemplateURL: https://jehangir-nested-bucket.s3.us-east-2.amazonaws.com/nestedstacks/NestedStack-EC2-DB.yaml
         TimeoutInMinutes: 5
 
@@ -99,5 +113,6 @@ Resources:
           WebSG: !GetAtt SGStack.Outputs.JehangirCFWebSG
           TargetGroup: !GetAtt ALBStack.Outputs.JehangirCFTargetGroup
           Environment: !Ref Environment
+          MyKeyName: !Ref MyKeyName
         TemplateURL: https://jehangir-nested-bucket.s3.us-east-2.amazonaws.com/nestedstacks/NestedStack-ASG.yaml
         TimeoutInMinutes: 5

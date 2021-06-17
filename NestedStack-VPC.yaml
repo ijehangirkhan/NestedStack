@@ -238,7 +238,7 @@ Outputs:
     Description: Public Subnet 1 ID
     Export:
       Name: !Sub JehangirCFPublicSubnet1-${Environment}
-    Value: !Ref JehangirCFPublicSubnet1
+    Value: !GetAtt JehangirCFPublicSubnet1
 
 # Export Public Subnet 2 
   JehangirCFPublicSubnet2:
